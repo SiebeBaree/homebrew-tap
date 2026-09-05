@@ -19,22 +19,17 @@ jobs:
     name: Audit the casks
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - uses: Homebrew/actions/setup-homebrew@master
+      # No actions/checkout on purpose. setup-homebrew clones this repo into
+      # Homebrew's own taps directory at the commit under test, so brew reads
+      # this commit rather than what is already on GitHub and a pull request is
+      # audited before it lands. A checkout step here lands in the wrong
+      # directory and then fights the action over that clone.
+      - uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c
 
       - name: brew style
-        run: brew style "$GITHUB_WORKSPACE"
+        run: brew style siebebaree/tap
 
       # --online downloads the DMG, so this is what catches a sha256 that does
-      # not match the release the url points at. Symlinking the checkout in as
-      # the tap is what makes brew audit read this commit rather than what is
-      # already on GitHub, so a pull request is audited before it lands.
+      # not match the release the url points at.
       - name: brew audit
-        run: |
-          TAPS="$(brew --repository)/Library/Taps/siebebaree"
-          mkdir -p "$TAPS"
-          ln -s "$GITHUB_WORKSPACE" "$TAPS/homebrew-tap"
-          brew audit --cask --online --strict siebebaree/tap/notchlet
+        run: brew audit --cask --online --strict siebebaree/tap/notchlet
