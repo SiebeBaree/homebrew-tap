@@ -1,0 +1,40 @@
+name: Tests
+
+# The release workflow in SiebeBaree/Notchlet pushes here with no review, so a
+# bad bump would otherwise be found by whoever runs brew install next.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Audit the casks
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: Homebrew/actions/setup-homebrew@master
+
+      - name: brew style
+        run: brew style "$GITHUB_WORKSPACE"
+
+      # --online downloads the DMG, so this is what catches a sha256 that does
+      # not match the release the url points at. Symlinking the checkout in as
+      # the tap is what makes brew audit read this commit rather than what is
+      # already on GitHub, so a pull request is audited before it lands.
+      - name: brew audit
+        run: |
+          TAPS="$(brew --repository)/Library/Taps/siebebaree"
+          mkdir -p "$TAPS"
+          ln -s "$GITHUB_WORKSPACE" "$TAPS/homebrew-tap"
+          brew audit --cask --online --strict siebebaree/tap/notchlet
