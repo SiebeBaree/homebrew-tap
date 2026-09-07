@@ -1,6 +1,6 @@
 cask "notchlet" do
-  version "0.3.0"
-  sha256 "5de8b69051dc5e4f1aadadf6ab55077981ab08fa109cec168ff5d1c36751c21a"
+  version "0.4.0"
+  sha256 "b82c4c5647434390f5b0b6bdcba021dd687570e45abb866c216a50267653feec"
 
   url "https://github.com/SiebeBaree/Notchlet/releases/download/v#{version}/Notchlet-#{version}.dmg"
   name "Notchlet"
